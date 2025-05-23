@@ -2,11 +2,26 @@ const { Client } = require('discord.js-selfbot-v13');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 3000;
 require('dotenv').config();
 
+// เพิ่มในส่วนต้นของไฟล์ หลัง require statements
+const express = require('express');
+const app = express();
+const PORT = 3000;
+
+app.get('/', (req, res) => {
+    res.json({
+        status: 'online',
+        uptime: Math.floor(process.uptime()),
+        timestamp: new Date().toISOString(),
+        bot_status: client.user ? 'connected' : 'disconnected',
+        guilds_count: client.guilds ? client.guilds.cache.size : 0
+    });
+});
+
+app.get('/health', (req, res) => {
+    res.json({ status: 'healthy', timestamp: new Date() });
+});
 // Configuration from environment variables
 const CONFIG = {
     user_token: process.env.DISCORD_USER_TOKEN,
@@ -1211,6 +1226,11 @@ client.once('ready', () => {
     console.log(`🤖 Bot logged in as ${client.user.tag}!`);
     console.log(`📊 Bot is in ${client.guilds.cache.size} guilds`);
     
+    // เริ่ม Express server หลังจาก bot ready
+    app.listen(PORT, () => {
+        console.log(`🌐 Web server running on port ${PORT}`);
+    });
+    
     // Start message checking loop
     setInterval(() => {
         relay.checkAndRelayMessages();
@@ -1218,6 +1238,25 @@ client.once('ready', () => {
     
     console.log(`⏰ Message check interval: ${CONFIG.check_interval / 1000} seconds`);
 });
+
+// เพิ่ม keep-alive mechanism (เพิ่มหลัง CONFIG)
+const KEEP_ALIVE_INTERVAL = 14 * 60 * 1000; // 14 นาที
+
+function keepAlive() {
+    // ทำ self-ping ทุก 14 นาที
+    setInterval(() => {
+        console.log('💓 Keep alive ping...');
+        // ส่ง request ไปหาตัวเอง
+        const appUrl = process.env.RENDER_EXTERNAL_URL;
+        if (appUrl) {
+            require('https').get(appUrl, (res) => {
+                console.log(`💓 Keep alive response: ${res.statusCode}`);
+            }).on('error', (err) => {
+                console.log('💓 Keep alive error:', err.message);
+            });
+        }
+    }, KEEP_ALIVE_INTERVAL);
+}
 
 // Command handling (for testing purposes)
 client.on('messageCreate', async (message) => {
@@ -1380,15 +1419,9 @@ process.on('SIGINT', () => {
 });
 
 // Login to Discord
-client.login(CONFIG.user_token).catch(error => {
+client.login(CONFIG.user_token).then(() => {
+    keepAlive();
+}).catch(error => {
     console.error('❌ Failed to login:', error.message || error);
     process.exit(1);
-});
-
-app.get("/", (req, res) => {
-  res.send("I'm alive!");
-});
-
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
 });
