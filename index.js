@@ -2,6 +2,9 @@ const { Client } = require('discord.js-selfbot-v13');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
 require('dotenv').config();
 
 // Configuration from environment variables
@@ -1380,4 +1383,12 @@ process.on('SIGINT', () => {
 client.login(CONFIG.user_token).catch(error => {
     console.error('❌ Failed to login:', error.message || error);
     process.exit(1);
+});
+
+app.get("/", (req, res) => {
+  res.send("I'm alive!");
+});
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
