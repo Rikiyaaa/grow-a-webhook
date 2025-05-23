@@ -1,0 +1,11 @@
+# ไม่เอาไฟล์ .env (ข้อมูลลับ)
+.env
+
+# ไม่เอาโฟลเดอร์ node_modules
+node_modules/
+
+# ไม่เอาไฟล์ .DS_Store (ของ macOS)
+.DS_Store
+
+# ไม่เอาไฟล์ทั้งหมดในโฟลเดอร์ temp/
+temp/
