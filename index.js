@@ -2,12 +2,13 @@ const { Client } = require('discord.js-selfbot-v13');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-require('dotenv').config();
-
-// เพิ่มในส่วนต้นของไฟล์ หลัง require statements
 const express = require('express');
 const app = express();
 const PORT = 3000;
+require('dotenv').config();
+
+// เพิ่มในส่วนต้นของไฟล์ หลัง require statements
+
 
 app.get('/', (req, res) => {
     res.json({
